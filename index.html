@@ -1,57 +1,28 @@
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-<meta charset="UTF-8">
-<title>Yeşil Rapor Asistanı</title>
-<style>
-body{font-family:Arial;margin:2rem;background:#f4f7fa}
-form{max-width:420px;margin:auto;padding:2rem;background:#fff;border-radius:8px;box-shadow:0 2px 8px #ccc}
-input,button{width:100%;padding:10px;margin:6px 0;border:1px solid #bbb;border-radius:4px;font-size:1rem}
-button{background:#00804b;color:#fff;border:none;cursor:pointer}
-button:hover{opacity:.9}
-#link{margin-top:1rem}
-</style>
-</head>
-<body>
-
-<form id="raporForm">
-  <h2>Yeşil Rapor Formu</h2>
-  <input required name="firma"   placeholder="Firma Adı">
-  <input required type="number" step="any" name="elektrik" placeholder="Elektrik (kWh)">
-  <input required type="number" step="any" name="yakit"    placeholder="Yakıt (Litre)">
-  <input required type="number" step="any" name="su"       placeholder="Su (m³)">
-  <input required type="number" step="any" name="atik"     placeholder="Atık (kg)">
-  <button type="submit">Raporu Oluştur</button>
-  <div id="link"></div>
+<!DOCTYPE html><html lang="tr"><meta charset="utf-8">
+<title>Yeşil Rapor Formu</title>
+<style>body{font-family:sans-serif;padding:2rem;max-width:480px;margin:auto}
+input,button{width:100%;margin:.4rem 0;padding:.6rem;font-size:1rem}</style>
+<h2>Yeşil Rapor</h2>
+<form id="f">
+  <input name="firma"   placeholder="Firma Adı"   required>
+  <input name="elektrik"placeholder="Elektrik (kWh)" type="number" step="any" required>
+  <input name="yakit"   placeholder="Yakıt (L)"     type="number" step="any" required>
+  <input name="su"      placeholder="Su (m³)"       type="number" step="any" required>
+  <input name="atik"    placeholder="Atık (kg)"     type="number" step="any" required>
+  <button>Raporu Oluştur</button>
 </form>
-
+<p id="out"></p>
 <script>
-const ENDPOINT = 'https://script.google.com/macros/s/AKfycbxxLp01-gfxKV4YkvtIpYix99AC-5m_4jcE60UfyIfOGG2pQEiFeQHgGw1KhVsho9MCWA/exec'; // Apps Script linki
+const URL='https://script.google.com/macros/s/…/exec'; // kendi /exec linkin
 
-document.getElementById('raporForm').addEventListener('submit', async e=>{
-  e.preventDefault();
-  const fd  = new FormData(e.target);
-  const obj = Object.fromEntries(fd.entries());
-
-  const btn = e.target.querySelector('button');
-  btn.disabled = true; btn.textContent = 'Gönderiliyor...';
-
-  try{
-    const r = await fetch(ENDPOINT, {
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify(obj)
-    });
-    const res = await r.json();
-    document.getElementById('link').innerHTML =
-      `PDF hazır: <a href="${res.pdf}" target="_blank">İndir / Gör</a>`;
-  }catch(err){
-    alert('Hata: '+err);
-  }finally{
-    btn.disabled = false; btn.textContent = 'Raporu Oluştur';
-  }
-});
+document.getElementById('f').onsubmit=async ev=>{
+  ev.preventDefault();
+  const fd=new FormData(ev.target);
+  const resp=await fetch(URL,{method:'POST',body:new URLSearchParams(fd)});
+  const link=await resp.text();
+  document.getElementById('out').innerHTML=
+    link.startsWith('http')?`PDF hazır: <a href="${link}" target="_blank">İndir/Gör</a>`
+                           :'Hata: '+link;
+};
 </script>
-
-</body>
 </html>
